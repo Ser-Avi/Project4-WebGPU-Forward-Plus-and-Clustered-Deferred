@@ -3,8 +3,14 @@ import { toRadians } from "../math_util";
 import { device, canvas, fovYDegrees, aspectRatio } from "../renderer";
 
 class CameraUniforms {
-    readonly buffer = new ArrayBuffer(16 * 4);
-    private readonly floatView = new Float32Array(this.buffer);
+    // lots of padding calculations here
+    readonly buffer = new ArrayBuffer(16 * 17);
+    private readonly floatView = new Float32Array(this.buffer, 0, 16);
+    private readonly floatInvProj = new Float32Array(this.buffer, 64, 16);
+    private readonly floatViewOnlyMat = new Float32Array(this.buffer, 128, 16);
+    private readonly floatProjOnlyMat = new Float32Array(this.buffer, 192, 16);
+    private readonly floatRes = new Float32Array(this.buffer, 256, 2);
+    private readonly floatClips = new Float32Array(this.buffer, 264, 2);
 
     set viewProjMat(mat: Float32Array) {
         // TODO-1.1: set the first 16 elements of `this.floatView` to the input `mat`
@@ -12,6 +18,37 @@ class CameraUniforms {
         {
             this.floatView[i] = mat[i];
         }
+    }
+
+    SetProjInvMat(mat: Float32Array) {
+        for (let i = 0; i < 16; ++i)
+        {
+            this.floatInvProj[i] = mat[i];
+        }
+    }
+
+    SetViewMat(mat: Float32Array) {
+        for (let i = 0; i < 16; ++i)
+        {
+            this.floatViewOnlyMat[i] = mat[i];
+        }
+    }
+
+    SetProjMat(mat: Float32Array) {
+        for (let i = 0; i < 16; ++i)
+        {
+            this.floatViewOnlyMat[i] = mat[i];
+        }
+    }
+
+    SetCamRes(w:number, h:number) {
+        this.floatRes[0] = w;
+        this.floatRes[1] = h;
+    }
+
+    SetClips(near: number, far: number) {
+        this.floatClips[0] = near;
+        this.floatClips[1] = far;
     }
 
     // TODO-2: add extra functions to set values needed for light clustering here
@@ -59,6 +96,9 @@ export class Camera {
         canvas.addEventListener('mousedown', () => canvas.requestPointerLock());
         canvas.addEventListener('mouseup', () => document.exitPointerLock());
         canvas.addEventListener('mousemove', (event) => this.onMouseMove(event));
+
+        this.uniforms.SetCamRes(canvas.width, canvas.height);
+        this.uniforms.SetClips(Camera.nearPlane, Camera.farPlane);
     }
 
     private onKeyEvent(event: KeyboardEvent, down: boolean) {
@@ -139,8 +179,10 @@ export class Camera {
         const viewProjMat = mat4.mul(this.projMat, viewMat);
         // TODO-1.1: set `this.uniforms.viewProjMat` to the newly calculated view proj mat
         this.uniforms.viewProjMat = viewProjMat;
+        this.uniforms.SetProjInvMat(mat4.inverse(this.projMat));
+        this.uniforms.SetViewMat(viewMat);
+        this.uniforms.SetProjMat(this.projMat);
         // TODO-2: write to extra buffers needed for light clustering here
-
         // TODO-1.1: upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
         // check `lights.ts` for examples of using `device.queue.writeBuffer()`
         device.queue.writeBuffer(this.uniformsBuffer, 0, this.uniforms.buffer);
