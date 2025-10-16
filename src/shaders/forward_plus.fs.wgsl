@@ -52,24 +52,6 @@ fn main(in: FragmentInput) -> @location(0) vec4f
     let clusterIdxX = u32(screenPos.x * numClustersX);
     let clusterIdxY = u32(screenPos.y * numClustersY);
     let clusterIdxZ = u32(depth * numClustersZ);
-    
-    
-    // first we check which cluster we're in by using our fragment x/y and our depth
-    // let resolution = camera.resolution;
-    // let numClustersX = f32(${clusterCountX});
-    // let numClustersY = f32(${clusterCountY});
-    // let numClustersZ = f32(${clusterCountZ});
-    
-    // // our pos is in world space, but it would be easier if they weren't
-    // let viewPos = camera.viewProjMat * vec4f(in.pos, 1.0);
-    // var pixelPos = viewPos / viewPos.w; // [-1, 1]
-    // pixelPos += vec4f(1.0, 1.0, 1.0, 0.0); // [0, 2]
-    // pixelPos *= vec4f(0.5, 0.5, 0.5, 1.0); // [0, 1] -> NDC
-    // let clusterSpacePos = pixelPos * vec4(numClustersX, numClustersY, numClustersZ, 0);
-    // // now we have their idx in "cluster space" for x and y, but for z we want world space
-    // let clusterIdxX = floor(clusterSpacePos.x);
-    // let clusterIdxY = floor(clusterSpacePos.y);
-    // let clusterIdxZ = floor(clusterSpacePos.z);
 
     let clusterIdx = clusterIdxX + clusterIdxY * u32(numClustersX) + clusterIdxZ * u32(numClustersX * numClustersY);
 

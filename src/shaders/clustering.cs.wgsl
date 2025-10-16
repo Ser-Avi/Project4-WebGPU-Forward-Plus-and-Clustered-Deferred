@@ -28,9 +28,8 @@
 
 // cube intersection with sphere test
 // C1 is min, C2 is max, S is sphere center, R is radius
-fn testSphereAABB(C1: vec3f, C2: vec3f, mid: vec3f, R: f32) -> bool {
+fn testSphereAABB(C1: vec3f, C2: vec3f, S: vec3f, R: f32) -> bool {
     var dist_squared = R * R;
-    let S = (camera.viewMat * vec4(mid, 1)).xyz;
     if (S.x < C1.x) {
         dist_squared -= (S.x - C1.x) * (S.x - C1.x);
     } else if (S.x > C2.x) {
@@ -69,10 +68,10 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let tileSizeX = resolution.x / numClustersX;
     let tileSizeY = resolution.y / numClustersY;
 
-    let clusterScreenMinX = f32(globalIdx.x) * tileSizeX;
-    let clusterScreenMaxX = f32(globalIdx.x + 1) * tileSizeX;
-    let clusterScreenMinY = f32(globalIdx.y) * tileSizeY;
-    let clusterScreenMaxY = f32(globalIdx.y + 1) * tileSizeY;
+    let clusterScreenMinX = (f32(globalIdx.x) * tileSizeX);
+    let clusterScreenMaxX = (f32(globalIdx.x + 1) * tileSizeX);
+    let clusterScreenMinY = (f32(globalIdx.y) * tileSizeY);
+    let clusterScreenMaxY = (f32(globalIdx.y + 1) * tileSizeY);
 
     let maxPoint_vS = screenToView(vec4f(clusterScreenMaxX, clusterScreenMaxY, -1.0, 1.0)).xyz;
     let minPoint_vS = screenToView(vec4f(clusterScreenMinX, clusterScreenMinY, -1.0, 1.0)).xyz;
@@ -94,7 +93,7 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     // loop over each light
     for (var lightIdx = 0u; lightIdx < lightSet.numLights; lightIdx++) {
         let light = lightSet.lights[lightIdx];
-        if (testSphereAABB(minPointAABB, maxPointAABB, light.pos, ${lightRadius}))
+        if (!testSphereAABB(minPointAABB, maxPointAABB, light.pos, ${lightRadius}))
         {
             clusterSet.clusters[clusterIdx].lightIdx[clusterSet.clusters[clusterIdx].numLights] = lightIdx;
             clusterSet.clusters[clusterIdx].numLights++;
@@ -106,9 +105,8 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     }
 }
 
-
 fn screenToView(screen: vec4f) -> vec4f {
-    let texCoord = screen.xy / camera.resolution;
+    let texCoord = (screen.xy / camera.resolution);
     let clip = vec4f(vec2f(texCoord.x, 1 - texCoord.y), screen.z, screen.w);
     var view = camera.projInvMat * clip;
     view /= view.w;
