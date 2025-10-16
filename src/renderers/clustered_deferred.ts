@@ -18,8 +18,6 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
     positionTexture: GPUTexture;
     positionTextureView: GPUTextureView;
 
-    sampler: GPUSampler;
-
     depthTexture: GPUTexture;
     depthTextureView: GPUTextureView;
 
@@ -121,11 +119,6 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
 
 
         // SECOND PASS
-        this.sampler = renderer.device.createSampler({
-            magFilter: 'linear',
-            minFilter: 'linear'
-        });
-
         this.secondBindGroupLayout = renderer.device.createBindGroupLayout({
             label: "second pass bind group layout",
             entries: [
@@ -159,11 +152,6 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
                     texture: {
                         sampleType: 'float'
                     }
-                },
-                {   // sampler
-                    binding: 6,
-                    visibility: GPUShaderStage.FRAGMENT,
-                    sampler: {}
                 }]
         });
 
@@ -190,10 +178,6 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
                 {
                     binding: 5,
                     resource: this.positionTextureView
-                },
-                {
-                    binding: 6,
-                    resource: this.sampler
                 }
             ]
         });
@@ -239,26 +223,26 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
             label: "cluster first pass descriptor",
             colorAttachments: [
                 {
-                    view: this.albedoTexture.createView(),
+                    view: this.albedoTextureView,//.createView(),
                     clearValue: {r:0, g:0, b:0, a:0},
                     loadOp: "clear",
                     storeOp: "store"
                 },
                 {
-                    view: this.normalTexture.createView(),
+                    view: this.normalTextureView,//.createView(),
                     clearValue: {r:0, g:0, b:0, a:0},
                     loadOp: "clear",
                     storeOp: "store"
                 },
                 {
-                    view: this.positionTexture.createView(),
+                    view: this.positionTextureView,//.createView(),
                     clearValue: {r:0, g:0, b:0, a:0},
                     loadOp: "clear",
                     storeOp: "store"
                 }
             ],
             depthStencilAttachment: {
-                view: this.depthTexture.createView(),
+                view: this.depthTextureView,//.createView(),
                 depthClearValue: 1.0,
                 depthLoadOp: "clear",
                 depthStoreOp: "store"

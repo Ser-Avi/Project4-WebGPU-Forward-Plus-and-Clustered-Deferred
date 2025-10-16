@@ -9,7 +9,6 @@
 @group(${bindGroup_gbuffer}) @binding(3) var albedoTex: texture_2d<f32>;
 @group(${bindGroup_gbuffer}) @binding(4) var norTex: texture_2d<f32>;
 @group(${bindGroup_gbuffer}) @binding(5) var posTex: texture_2d<f32>;
-@group(${bindGroup_gbuffer}) @binding(6) var texSampler: sampler;
 
 struct FragmentInput
 {
