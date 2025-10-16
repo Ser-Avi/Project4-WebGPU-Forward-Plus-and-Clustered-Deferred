@@ -63,10 +63,6 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let tileNear = -f32(camera.near) * pow(f32(camera.far/camera.near), f32(globalIdx.z) / numClustersZ);
     let tileFar = -f32(camera.near) * pow(f32(camera.far/camera.near), f32(globalIdx.z + 1) / numClustersZ);
 
-    // let minPointNear = lineIntersectionToZPlane(vec3f(0, 0, 0), minPoint_vS, tileNear);
-    // let minPointFar = lineIntersectionToZPlane(vec3f(0, 0, 0), minPoint_vS, tileFar);
-    // let maxPointNear = lineIntersectionToZPlane(vec3f(0, 0, 0), maxPoint_vS, tileNear);
-    // let maxPointFar = lineIntersectionToZPlane(vec3f(0, 0, 0), maxPoint_vS, tileFar);
     let minPointNear = minPoint_vS * (tileNear / minPoint_vS.z);
     let minPointFar = minPoint_vS * (tileFar / minPoint_vS.z);
     let maxPointNear = maxPoint_vS * (tileNear / maxPoint_vS.z);

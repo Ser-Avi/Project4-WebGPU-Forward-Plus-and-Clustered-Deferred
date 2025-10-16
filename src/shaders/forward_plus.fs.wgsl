@@ -26,7 +26,8 @@ struct FragmentInput
 {
     @location(0) pos: vec3f,
     @location(1) nor: vec3f,
-    @location(2) uv: vec2f
+    @location(2) uv: vec2f,
+    @builtin(position) fragPos: vec4f
 }
 
 @fragment
@@ -39,17 +40,13 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
     // first we convert world pos to view space for easy calculations
     let viewPos = camera.viewMat * vec4f(in.pos, 1.0);
-    let projPos = camera.projMat * vec4f(viewPos.xyz, 1.0);
-    // next to NDC [0, 1]
-    let ndc = projPos.xyz / projPos.w;
-    let screenPos = ndc * 0.5 + 0.5;
     
     let numClustersX = f32(${clusterCountX});
     let numClustersY = f32(${clusterCountY});
     let numClustersZ = f32(${clusterCountZ});
 
-    let clusterIdxX = u32(screenPos.x * numClustersX);
-    let clusterIdxY = u32(screenPos.y * numClustersY);
+    let clusterIdxX = u32(in.fragPos.x / camera.resolution.x * numClustersX);
+    let clusterIdxY = u32(in.fragPos.y / camera.resolution.y * numClustersY);
 
     // z calc is a bit more involved because it is non-linear
     // first we normalize
