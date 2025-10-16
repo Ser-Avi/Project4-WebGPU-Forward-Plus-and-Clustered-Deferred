@@ -20,24 +20,24 @@ class CameraUniforms {
         }
     }
 
-    SetProjInvMat(mat: Float32Array) {
+    set ProjInvMat(mat: Float32Array) {
         for (let i = 0; i < 16; ++i)
         {
             this.floatInvProj[i] = mat[i];
         }
     }
 
-    SetViewMat(mat: Float32Array) {
+    set ViewMat(mat: Float32Array) {
         for (let i = 0; i < 16; ++i)
         {
             this.floatViewOnlyMat[i] = mat[i];
         }
     }
 
-    SetProjMat(mat: Float32Array) {
+    set ProjMat(mat: Float32Array) {
         for (let i = 0; i < 16; ++i)
         {
-            this.floatViewOnlyMat[i] = mat[i];
+            this.floatProjOnlyMat[i] = mat[i];
         }
     }
 
@@ -96,9 +96,6 @@ export class Camera {
         canvas.addEventListener('mousedown', () => canvas.requestPointerLock());
         canvas.addEventListener('mouseup', () => document.exitPointerLock());
         canvas.addEventListener('mousemove', (event) => this.onMouseMove(event));
-
-        this.uniforms.SetCamRes(canvas.width, canvas.height);
-        this.uniforms.SetClips(Camera.nearPlane, Camera.farPlane);
     }
 
     private onKeyEvent(event: KeyboardEvent, down: boolean) {
@@ -179,10 +176,13 @@ export class Camera {
         const viewProjMat = mat4.mul(this.projMat, viewMat);
         // TODO-1.1: set `this.uniforms.viewProjMat` to the newly calculated view proj mat
         this.uniforms.viewProjMat = viewProjMat;
-        this.uniforms.SetProjInvMat(mat4.inverse(this.projMat));
-        this.uniforms.SetViewMat(viewMat);
-        this.uniforms.SetProjMat(this.projMat);
+        this.uniforms.ProjInvMat = (mat4.inverse(this.projMat));
+        this.uniforms.ViewMat = (viewMat);
+        this.uniforms.ProjMat = (this.projMat);
         // TODO-2: write to extra buffers needed for light clustering here
+        
+        this.uniforms.SetCamRes(canvas.width, canvas.height);
+        this.uniforms.SetClips(Camera.nearPlane, Camera.farPlane);
         // TODO-1.1: upload `this.uniforms.buffer` (host side) to `this.uniformsBuffer` (device side)
         // check `lights.ts` for examples of using `device.queue.writeBuffer()`
         device.queue.writeBuffer(this.uniformsBuffer, 0, this.uniforms.buffer);

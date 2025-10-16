@@ -23,7 +23,7 @@ export class Lights {
     lightSetStorageBuffer: GPUBuffer;
 
     timeUniformBuffer: GPUBuffer;
-    
+
     moveLightsComputeBindGroupLayout: GPUBindGroupLayout;
     moveLightsComputeBindGroup: GPUBindGroup;
     moveLightsComputePipeline: GPUComputePipeline;
@@ -40,11 +40,14 @@ export class Lights {
     constructor(camera: Camera) {
         this.camera = camera;
         
-        this.clustersArray = new Float32Array(shaders.constants.clusterCountX * shaders.constants.clusterCountY * shaders.constants.clusterCountZ * (4 + shaders.constants.maxLightPerCluster));
+        this.clustersArray = new Float32Array(shaders.constants.clusterCountX *
+             shaders.constants.clusterCountY * 
+             shaders.constants.clusterCountZ * 
+             (16 + shaders.constants.maxLightPerCluster) + 16);
 
         this.clusterBuffer = device.createBuffer({
             label: "clusters buffer",
-            size: 16 + this.clustersArray.byteLength, // numlights + padding
+            size: this.clustersArray.byteLength, // numlights + padding
             usage: GPUBufferUsage.STORAGE | GPUBufferUsage.COPY_DST
         });
 

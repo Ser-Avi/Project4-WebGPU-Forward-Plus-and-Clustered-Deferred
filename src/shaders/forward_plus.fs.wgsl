@@ -43,7 +43,6 @@ fn main(in: FragmentInput) -> @location(0) vec4f
     // next to NDC [0, 1]
     let ndc = projPos.xyz / projPos.w;
     let screenPos = ndc * 0.5 + 0.5;
-    let depth = (-viewPos.z - f32(camera.near)) / f32(camera.far - camera.near);
     
     let numClustersX = f32(${clusterCountX});
     let numClustersY = f32(${clusterCountY});
@@ -51,7 +50,12 @@ fn main(in: FragmentInput) -> @location(0) vec4f
 
     let clusterIdxX = u32(screenPos.x * numClustersX);
     let clusterIdxY = u32(screenPos.y * numClustersY);
-    let clusterIdxZ = u32(depth * numClustersZ);
+
+    // z calc is a bit more involved because it is non-linear
+    // first we normalize
+    let normalizedDepth = log(-viewPos.z / f32(camera.near)) / log(f32(camera.far / camera.near));
+    // then we get index with an out of bounds check just to be safe
+    let clusterIdxZ = min(u32(normalizedDepth * numClustersZ), u32(numClustersZ) - 1u);
 
     let clusterIdx = clusterIdxX + clusterIdxY * u32(numClustersX) + clusterIdxZ * u32(numClustersX * numClustersY);
 
@@ -66,11 +70,6 @@ fn main(in: FragmentInput) -> @location(0) vec4f
     }
 
     var finalColor = diffuseColor.rgb * totalLightContrib;
-
-    if (clustNumLights < 1)
-    {
-        finalColor = diffuseColor.rgb * vec3(1, 0, 0);
-    }
-
+    //var finalColor = vec3f(1, 1, 1) * f32(clustNumLights) / 50.f;
     return vec4(finalColor, 1);
 }

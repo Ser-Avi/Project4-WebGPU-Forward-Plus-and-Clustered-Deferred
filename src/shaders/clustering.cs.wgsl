@@ -29,28 +29,10 @@
 // cube intersection with sphere test
 // C1 is min, C2 is max, S is sphere center, R is radius
 fn testSphereAABB(C1: vec3f, C2: vec3f, S: vec3f, R: f32) -> bool {
-    var dist_squared = R * R;
-    if (S.x < C1.x) {
-        dist_squared -= (S.x - C1.x) * (S.x - C1.x);
-    } else if (S.x > C2.x) {
-        dist_squared -= (S.x - C2.x) * (S.x - C2.x);
-    }
-    
-    if (S.y < C1.y) {
-        dist_squared -= (S.y - C1.y) * (S.y - C1.y);
-    } else if (S.y > C2.y) {
-        dist_squared -= (S.y - C2.y) * (S.y - C2.y);
-    }
-    
-    if (S.z < C1.z) {
-        dist_squared -= (S.z - C1.z) * (S.z - C1.z);
-    } else if (S.z > C2.z) {
-        dist_squared -= (S.z - C2.z) * (S.z - C2.z);
-    }
-    
-    return dist_squared > 0;
+    let dist = max(vec3f(0, 0, 0), max(C1 - S, S - C2));
+    let distSq = dot(dist, dist);
+    return distSq < R * R;
 }
-
 
 @compute
 @workgroup_size(${clustersWorkgroupDimX}, ${clustersWorkgroupDimY}, ${clustersWorkgroupDimZ})
@@ -62,7 +44,9 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
         return;
     };
 
-    let clusterIdx = globalIdx.x + globalIdx.y * u32(numClustersX) + globalIdx.z * u32(numClustersX * numClustersY);
+    let clusterIdx = globalIdx.x + 
+            globalIdx.y * u32(numClustersX) + 
+            globalIdx.z * u32(numClustersX * numClustersY);
 
     let resolution = camera.resolution;
     let tileSizeX = resolution.x / numClustersX;
@@ -79,10 +63,14 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     let tileNear = -f32(camera.near) * pow(f32(camera.far/camera.near), f32(globalIdx.z) / numClustersZ);
     let tileFar = -f32(camera.near) * pow(f32(camera.far/camera.near), f32(globalIdx.z + 1) / numClustersZ);
 
-    let minPointNear = lineIntersectionToZPlane(vec3f(0, 0, 0), minPoint_vS, tileNear);
-    let minPointFar = lineIntersectionToZPlane(vec3f(0, 0, 0), minPoint_vS, tileFar);
-    let maxPointNear = lineIntersectionToZPlane(vec3f(0, 0, 0), maxPoint_vS, tileNear);
-    let maxPointFar = lineIntersectionToZPlane(vec3f(0, 0, 0), maxPoint_vS, tileFar);
+    // let minPointNear = lineIntersectionToZPlane(vec3f(0, 0, 0), minPoint_vS, tileNear);
+    // let minPointFar = lineIntersectionToZPlane(vec3f(0, 0, 0), minPoint_vS, tileFar);
+    // let maxPointNear = lineIntersectionToZPlane(vec3f(0, 0, 0), maxPoint_vS, tileNear);
+    // let maxPointFar = lineIntersectionToZPlane(vec3f(0, 0, 0), maxPoint_vS, tileFar);
+    let minPointNear = minPoint_vS * (tileNear / minPoint_vS.z);
+    let minPointFar = minPoint_vS * (tileFar / minPoint_vS.z);
+    let maxPointNear = maxPoint_vS * (tileNear / maxPoint_vS.z);
+    let maxPointFar = maxPoint_vS * (tileFar / maxPoint_vS.z);
     
     let minPointAABB = min(min(minPointNear, minPointFar), min(maxPointNear, maxPointFar));
     let maxPointAABB = max(max(minPointNear, minPointFar), max(maxPointNear, maxPointFar));
@@ -93,21 +81,20 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     // loop over each light
     for (var lightIdx = 0u; lightIdx < lightSet.numLights; lightIdx++) {
         let light = lightSet.lights[lightIdx];
-        if (!testSphereAABB(minPointAABB, maxPointAABB, light.pos, ${lightRadius}))
+        if (testSphereAABB(minPointAABB, maxPointAABB, (camera.viewMat * vec4f(light.pos, 1.0)).xyz, ${lightRadius}))
         {
             clusterSet.clusters[clusterIdx].lightIdx[clusterSet.clusters[clusterIdx].numLights] = lightIdx;
             clusterSet.clusters[clusterIdx].numLights++;
-        }
-        if (clusterSet.clusters[clusterIdx].numLights >= ${maxLightPerCluster})
-        {
-            break;
+            if (clusterSet.clusters[clusterIdx].numLights >= ${maxLightPerCluster}) {
+                break;
+            }
         }
     }
 }
 
 fn screenToView(screen: vec4f) -> vec4f {
     let texCoord = (screen.xy / camera.resolution);
-    let clip = vec4f(vec2f(texCoord.x, 1 - texCoord.y), screen.z, screen.w);
+    let clip = vec4f(vec2f(texCoord.x, 1 - texCoord.y), screen.z, screen.w) * 2 - 1;
     var view = camera.projInvMat * clip;
     view /= view.w;
     return view;
