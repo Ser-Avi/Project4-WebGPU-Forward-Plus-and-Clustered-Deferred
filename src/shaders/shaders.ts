@@ -33,7 +33,7 @@ export const constants = {
 
     clusterCountX : 16,
     clusterCountY : 8,
-    clusterCountZ : 16,
+    clusterCountZ : 32,
 
     clustersWorkgroupDimX : 8,
     clustersWorkgroupDimY : 8,
