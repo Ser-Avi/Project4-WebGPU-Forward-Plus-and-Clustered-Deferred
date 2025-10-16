@@ -81,7 +81,8 @@ fn main(@builtin(global_invocation_id) globalIdx: vec3u) {
     // loop over each light
     for (var lightIdx = 0u; lightIdx < lightSet.numLights; lightIdx++) {
         let light = lightSet.lights[lightIdx];
-        if (testSphereAABB(minPointAABB, maxPointAABB, (camera.viewMat * vec4f(light.pos, 1.0)).xyz, ${lightRadius}))
+        // NOTE: had to hardcode light rad to 2 here for github pages
+        if (testSphereAABB(minPointAABB, maxPointAABB, (camera.viewMat * vec4f(light.pos, 1.0)).xyz, 2))
         {
             clusterSet.clusters[clusterIdx].lightIdx[clusterSet.clusters[clusterIdx].numLights] = lightIdx;
             clusterSet.clusters[clusterIdx].numLights++;
