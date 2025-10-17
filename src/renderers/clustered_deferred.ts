@@ -223,26 +223,26 @@ export class ClusteredDeferredRenderer extends renderer.Renderer {
             label: "cluster first pass descriptor",
             colorAttachments: [
                 {
-                    view: this.albedoTextureView,//.createView(),
+                    view: this.albedoTextureView,
                     clearValue: {r:0, g:0, b:0, a:0},
                     loadOp: "clear",
                     storeOp: "store"
                 },
                 {
-                    view: this.normalTextureView,//.createView(),
+                    view: this.normalTextureView,
                     clearValue: {r:0, g:0, b:0, a:0},
                     loadOp: "clear",
                     storeOp: "store"
                 },
                 {
-                    view: this.positionTextureView,//.createView(),
+                    view: this.positionTextureView,
                     clearValue: {r:0, g:0, b:0, a:0},
                     loadOp: "clear",
                     storeOp: "store"
                 }
             ],
             depthStencilAttachment: {
-                view: this.depthTextureView,//.createView(),
+                view: this.depthTextureView,
                 depthClearValue: 1.0,
                 depthLoadOp: "clear",
                 depthStoreOp: "store"

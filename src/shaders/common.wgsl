@@ -13,7 +13,7 @@ struct LightSet {
 // TODO-2: you may want to create a ClusterSet struct similar to LightSet
 struct Cluster {
     numLights: u32,
-    lightIdx: array<u32, 1024>
+    lightIdx: array<u32, ${maxLightPerCluster}>
 }
 
 struct ClusterSet {

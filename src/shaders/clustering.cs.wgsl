@@ -96,15 +96,3 @@ fn screenToView(screen: vec4f) -> vec4f {
     view /= view.w;
     return view;
 }
-
-fn lineIntersectionToZPlane(a: vec3f, b: vec3f, zDistance: f32) -> vec3f {
-    //all clusters planes are aligned in the same z direction
-    let normal = vec3f(0.0, 0.0, 1.0);
-    //getting the line from the eye to the tile
-    let ab =  b - a;
-    //Computing the intersection length for the line and the plane
-    let t = (zDistance - dot(normal, a)) / dot(normal, ab);
-    //Computing the actual xyz position of the point along the line
-    let result = a + t * ab;
-    return result;
-}
