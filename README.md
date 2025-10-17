@@ -60,7 +60,7 @@ To analyze performance, I created three different scenarios. One, the "base sett
 
 To measure the results, I used the fps counter in the browser, but this is quite lacking, and I wish there was a better method, mainly because it was hard-capped at 70 by my browser for some reason. I tried using the WebGPU Debugger, but the fps count in that jumped around a lot and was also similarly capped. Also, it was capped at 160 a day ago, but it turned to 70 now, and I have no clue why... Anyway, here are my results:
 
-[](chart.png)
+![](chart.png)
 
 Here I combined all the results, since they follow the same general trend. Naive is colored in blues, Forward+ in greens, and Deferred in reds. Base is set with circles, half size with triangles, and 2x lights with squares.
 The results are pretty much what we would expect, except we can't really discern the difference between Forward+ and Deferred for most scenarios due to the cap. However, we can easily see how naive follows the logarithmic curve we were expecting, since it is O(fragments*lights). Of course, changing cluster numbers doesn't affect naive, since it is independent of it, but doubling the lights halves the performance.
